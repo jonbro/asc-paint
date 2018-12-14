@@ -17,7 +17,6 @@ TODO
 - different character palettes
 - move the display / raw input handling stuff to a module
 - draw modes
-  - line drawing
   - fill
   - rect
   - oval / circle
@@ -28,6 +27,7 @@ CHANGE LOG
 ==========
 *12/13/18*
 - text entry mode
+- line drawing mode
 
 *12/10/18*
 - save / load - updates url with id ref pointing to saved file in DB
