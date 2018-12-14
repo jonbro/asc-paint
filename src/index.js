@@ -77,10 +77,18 @@ function drawToLayer(x,y,c,fc,bc)
     }
   // update the data in local storage
 }
+
 window.onbeforeunload = function (e) {
   window.localStorage.setItem("currentBuffer", JSON.stringify(layer));
 };
-
+function drawToLayerWithCurrentSettings(x,y)
+{
+  drawToLayer(x,y,currentChar, currentFgColor, currentBgColor);
+}
+function drawCellWithCurrentSettings(x,y)
+{
+  d.draw(x,y,currentChar, currentFgColor, currentBgColor);
+}
 function drawCell(cellData)
 {
   let v = cellData;
@@ -113,6 +121,36 @@ function eyeDrop(x,y)
   currentFgColor = v.fgColor;
   currentBgColor = v.bgColor;
 }
+
+// from here: https://stackoverflow.com/questions/4672279/bresenham-algorithm-in-javascript
+function calculateLine (x1,y1, x2,y2) {
+  var coordinatesArray = new Array();
+  // Define differences and error check
+  var dx = Math.abs(x2 - x1);
+  var dy = Math.abs(y2 - y1);
+  var sx = (x1 < x2) ? 1 : -1;
+  var sy = (y1 < y2) ? 1 : -1;
+  var err = dx - dy;
+  // Set first coordinates
+  coordinatesArray.push([x1, y1]);
+  // Main loop
+  while (!((x1 == x2) && (y1 == y2))) {
+    var e2 = err << 1;
+    if (e2 > -dy) {
+      err -= dy;
+      x1 += sx;
+    }
+    if (e2 < dx) {
+      err += dx;
+      y1 += sy;
+    }
+    // Set coordinates
+    coordinatesArray.push([x1, y1]);
+  }
+  // Return the result
+  return coordinatesArray;
+}
+
 /// UI COMPONENTS ///
 class DrawArea extends UIBase
 {
@@ -150,6 +188,53 @@ class DrawArea extends UIBase
   pointerOver(x,y)
   {
     this.performButtonOps(x,y);
+  }
+}
+class LineDrawArea extends UIBase
+{
+  press(buttonId, x,y)
+  {
+    this.pressDown |= (1<<buttonId);
+    if((1<<buttonId) == 2)
+    {
+      eyeDrop(x,y);
+      updateDisplay();
+      return;
+    }
+    this.endX = this.startX = x;
+    this.endY = this.startY = y;
+    updateDisplay();
+  }
+  release(buttonId)
+  {
+    if((1<<buttonId) == 1)
+    {
+      let drawPoints = calculateLine(this.startX, this.startY, this.endX, this.endY);
+      drawPoints.forEach(function(p){
+        drawToLayerWithCurrentSettings(p[0],p[1]);
+      });
+      updateDisplay();
+    }
+    this.pressDown = this.pressDown & ~(1<<buttonId);
+  }
+  pointerOver(x,y)
+  {
+    if(this.pressDown & 1<<0)
+    {
+      this.endX = x;
+      this.endY = y;
+      updateDisplay();
+    }
+  }
+  render()
+  {
+    if(this.pressDown & 1<<0)
+    {
+      let drawPoints = calculateLine(this.startX, this.startY, this.endX, this.endY);
+      drawPoints.forEach(function(p){
+        drawCellWithCurrentSettings(p[0], p[1]);
+      });
+    }
   }
 }
 class TextInputArea extends UIBase
@@ -430,6 +515,7 @@ class ColorButton extends UIBase
 /// SETUP UI COMPONENTS ///
 var rootUI = new UIBase(0,0,80,40);
 var drawArea = new DrawArea(16,0,64,40);
+var lineDrawArea = new LineDrawArea(16,0,64,40);
 var copyArea = new CopyHandler(16,0,64,40);
 var pasteArea = new PasteHandler(16,0,64,40);
 var textInputArea = new TextInputArea(16,0,64,40);
@@ -446,6 +532,9 @@ var changeMode = function(newMode)
 let inputYPosition = 30;
 var drawModeButton = new ModeButton(1, inputYPosition++, "Draw", drawArea);
 rootUI.addChild(drawModeButton);
+
+var lineDrawModeButton = new ModeButton(1, inputYPosition++, "Line", lineDrawArea);
+rootUI.addChild(lineDrawModeButton);
 
 var textModeButton = new ModeButton(1, inputYPosition++, "Text", textInputArea);
 rootUI.addChild(textModeButton);
