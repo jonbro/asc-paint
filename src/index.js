@@ -564,8 +564,8 @@ saveButton.press = function(){
 };
 rootUI.addChild(saveButton);
 
-
-var clearCanvasButton = new TextButton(1,36,"Clear Canvas");
+inputYPosition++;
+var clearCanvasButton = new TextButton(1,inputYPosition++,"Clear Canvas");
 clearCanvasButton.press = function(){clearCanvas();updateDisplay();};
 rootUI.addChild(clearCanvasButton);
 
