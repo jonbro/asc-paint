@@ -3,14 +3,34 @@ import {UIBase} from "./UIElements"
 
 const codePage437 = require('./codePage437.json');
 const baseColors = require('./baseColors.json').colors;
-
-var o = {
-	width: 80,
-	height: 40,
-  fontSize: 18
+var imgReady = false;
+var tileSet = document.createElement("img");
+tileSet.src = "https://cdn.glitch.com/3a552aa6-77c2-462f-b211-c1e0fca2d303%2Foie_transparent.png?1544837688896";
+var tilemap = {};
+for (let x = 0; x < 16; x++)
+{
+  for(let y = 0; y < 16; y++)
+  {
+    let charVal = codePage437.characters[x+y*16];
+    tilemap[charVal] = [x*10, y*16];
+  }
 }
 
+var o = {
+  layout: "tile",
+  bg: "black",
+  tileWidth: 10,
+  tileHeight: 16,
+  tileColorize: true,
+	width: 80,
+	height: 40,
+  fontSize: 18,
+  tileSet: tileSet,
+  tileMap: tilemap
+}
+    //https://cdn.glitch.com/3a552aa6-77c2-462f-b211-c1e0fca2d303%2Fcp437_10x16_terminal.png?1543891565805
 var d = new ROT.Display(o);
+
 document.body.appendChild(d.getContainer());
 
 var layer = {};
@@ -43,7 +63,7 @@ var storageContents = window.localStorage.getItem("currentBuffer");
 var clearCanvas = function()
 {
   // clear the canvas
-  for(let x=0;x<80;x++)
+  for(let x=16;x<80;x++)
   {
     for(let y=0;y<40;y++)
     {
@@ -61,20 +81,28 @@ else if(storageContents == undefined)
 else
 {
   layer = JSON.parse(storageContents);
-  console.log(layer);
 }
-
+// do the initial draw
+  for(let x=16;x<80;x++)
+  {
+    for(let y=0;y<40;y++)
+    {
+      redrawCell(x,y);
+    }
+  }
 /// Utility functions ///
 // sets a pixel on the current layer
 function drawToLayer(x,y,c,fc,bc)
 {
-    layer[x+","+y] = {
+  let cData = {
       "char":c,
       "x":x,
       "y":y,
       "fgColor":fc,
       "bgColor":bc
-    }
+    };
+  layer[x+","+y] = cData;
+  drawCell(cData);
   // update the data in local storage
 }
 
@@ -89,6 +117,11 @@ function drawCellWithCurrentSettings(x,y)
 {
   d.draw(x,y,currentChar, currentFgColor, currentBgColor);
 }
+function redrawCell(x,y)
+{
+  if(layer[x+","+y] != undefined)
+    drawCell(layer[x+","+y]);
+}
 function drawCell(cellData)
 {
   let v = cellData;
@@ -98,21 +131,31 @@ function drawCell(cellData)
 // draws a ui outline square
 function drawSquare(x,y,width,height)
 {
+  let dirtyCells = [];
   for(let _x=x+1;_x<width+x;_x++)
   {
+    dirtyCells.push([_x,y]);
+    dirtyCells.push([_x,y+height]);
     d.draw(_x,y,"─","white","black");
     d.draw(_x,y+height,"─","white","black");
   }
   
   for(let _y=y+1;_y<height+y;_y++)
   {
+    dirtyCells.push([x,_y]);
+    dirtyCells.push([x+width,_y]);
     d.draw(x,_y,"│","white","black");
     d.draw(x+width,_y,"│","white","black");
   }
+  dirtyCells.push([x,y]);
+  dirtyCells.push([x,y+height]);
+  dirtyCells.push([x+width,y]);
+  dirtyCells.push([x+width,y+height]);
   d.draw(x,y,"┌","white","black");
   d.draw(x,y+height,"└","white","black");
   d.draw(x+width,y,"┐","white","black");
   d.draw(x+width,y+height,"┘","white","black");
+  return dirtyCells;
 }
 function eyeDrop(x,y)
 {
@@ -120,6 +163,10 @@ function eyeDrop(x,y)
   currentChar = v.char;
   currentFgColor = v.fgColor;
   currentBgColor = v.bgColor;
+  // set all the color and char buttons dirty
+  charButtons.forEach((b)=>{b.setDirty();});
+  colorButtons.forEach((b)=>{b.setDirty();});
+  updateDisplay();
 }
 
 // from here: https://stackoverflow.com/questions/4672279/bresenham-algorithm-in-javascript
@@ -162,7 +209,6 @@ class DrawArea extends UIBase
   draw(x,y)
   {  
     drawToLayer(x,y,currentChar,currentFgColor,currentBgColor);
-    updateDisplay();
   }
   performButtonOps(x,y)
   {
@@ -179,7 +225,6 @@ class DrawArea extends UIBase
   {
     this.pressDown |= (1<<buttonId);
     this.performButtonOps(x,y);
-    updateDisplay();
   }
   release(buttonId)
   {
@@ -203,6 +248,7 @@ class LineDrawArea extends UIBase
     }
     this.endX = this.startX = x;
     this.endY = this.startY = y;
+    this.setDirty();
     updateDisplay();
   }
   release(buttonId)
@@ -223,6 +269,7 @@ class LineDrawArea extends UIBase
     {
       this.endX = x;
       this.endY = y;
+      this.setDirty();
       updateDisplay();
     }
   }
@@ -230,9 +277,19 @@ class LineDrawArea extends UIBase
   {
     if(this.pressDown & 1<<0)
     {
+      if(this.lastPointSet != undefined)
+      {
+        this.lastPointSet.forEach(function(p){
+          // set back to the layer color
+          redrawCell(p[0], p[1]);
+        });
+      }
+      this.lastPointSet = [];
       let drawPoints = calculateLine(this.startX, this.startY, this.endX, this.endY);
+      let e = this;
       drawPoints.forEach(function(p){
         drawCellWithCurrentSettings(p[0], p[1]);
+        e.lastPointSet.push(p);
       });
     }
   }
@@ -251,6 +308,7 @@ class TextInputArea extends UIBase
       this.initialX = x;
       this.insertY = y;
     }
+    this.setDirty();
     updateDisplay();
   }
   keypress(keyCode, e)
@@ -281,6 +339,7 @@ class TextInputArea extends UIBase
           this.insertY++;
           break;
       }
+      this.setDirty();
       updateDisplay();
       return;
     }
@@ -288,6 +347,7 @@ class TextInputArea extends UIBase
     if(keyCode == 8)
     {
       drawToLayer(--this.insertX,this.insertY,' ',"black","black");
+      this.setDirty();
       updateDisplay();
       return;
     }
@@ -296,17 +356,22 @@ class TextInputArea extends UIBase
     {
       this.insertX = this.initialX;
       this.insertY++;
+      this.setDirty();
       updateDisplay();
       return;
     }
     let char = e.key;
     drawToLayer(this.insertX++,this.insertY,char,currentFgColor,currentBgColor);
+    this.setDirty();
     updateDisplay();
   }
   render()
   {
     if(this.insertX == undefined)
       return;
+    if(this.lastCursor != undefined)
+      redrawCell(this.lastCursor[0], this.lastCursor[1]);
+    this.lastCursor = [this.insertX, this.insertY];
     // render a cursor
     d.draw(this.insertX, this.insertY, '|', currentFgColor, currentBgColor); 
   }
@@ -318,6 +383,7 @@ class PasteHandler extends UIBase
   {
     this.offsetX = x;
     this.offsetY = y;
+    this.setDirty();
     updateDisplay();
   }
   press(buttonId)
@@ -332,22 +398,47 @@ class PasteHandler extends UIBase
         c.y += this.offsetY;
         layer[c.x+","+c.y] = c;
       }
+      this.setDirty();
       updateDisplay();
     }else
     {
       changeMode(drawArea);
+      this.setDirty();
       updateDisplay();
     }
   }
   render()
   {
+    // this could do some kind of diffing? Dunno.
+    let newDirtyCells = [];
+    let dirtyKeys = {};
     // copy the clipboard into the display
     for(let k in clipboard)
     {
       var c = Object.assign({},clipboard[k]);
       c.x += this.offsetX;
       c.y += this.offsetY;
+      dirtyKeys[c.x+","+c.y] = true;
+      newDirtyCells.push([c.x,c.y]);
       drawCell(c);
+    }
+    // clear out the unupdated cells
+    if(this.lastCells!=undefined)
+    {
+      this.lastCells.forEach(function(p){
+        if(dirtyKeys[p[0]+","+p[1]] == undefined)
+          redrawCell(p[0], p[1]);
+      });
+    }
+    this.lastCells = newDirtyCells;
+  }
+  cleanupOnExit()
+  {
+    if(this.lastCells!=undefined)
+    {
+      this.lastCells.forEach(function(p){
+          redrawCell(p[0], p[1]);
+      });
     }
   }
 }
@@ -378,6 +469,7 @@ class CopyHandler extends UIBase
       }
     }
     this.endX = this.endY = this.startY = this.startX = 0;
+    this.setDirty();
     updateDisplay();
   }
   pointerOver(x,y)
@@ -386,15 +478,23 @@ class CopyHandler extends UIBase
     {
       this.endX = x;
       this.endY = y;
+      this.setDirty();
       updateDisplay();
     }
   }
   render()
   {
+    if(this.lastBound != undefined)
+    {
+      this.lastBound.forEach(function(p){
+        redrawCell(p[0], p[1]);
+      });
+    }
+    this.lastBound = [];
     if(this.pressDown & 1)
     {
       let bounds = this.getBounds();
-      drawSquare(bounds[0]-1,bounds[1]-1,bounds[2]+1,bounds[3]+1);
+      this.lastBound = drawSquare(bounds[0]-1,bounds[1]-1,bounds[2]+1,bounds[3]+1);
     }
   }
   getBounds()
@@ -420,7 +520,7 @@ class TextButton extends UIBase
     d.drawText(this.x,this.y,"%c{"+this.textColor+"}"+this.text);
   }
 }
-
+var lastModeButton;
 class ModeButton extends TextButton
 {
   constructor(x,y,text,mode)
@@ -430,11 +530,15 @@ class ModeButton extends TextButton
   }
   press()
   {
+    if(lastModeButton != undefined)
+      lastModeButton.setDirty();
+    lastModeButton = this;
+    this.setDirty();
     changeMode(this.mode);
     updateDisplay();
   }
   render()
-  {
+  {    
     if(this.mode == currentMode)
     {
       this.textColor = "orange";
@@ -446,7 +550,7 @@ class ModeButton extends TextButton
     d.drawText(this.x,this.y,"%c{"+this.textColor+"}"+this.text);
   }
 }
-
+var lastCharButton;
 class CharButton extends UIBase
 {
   constructor(x,y,c)
@@ -456,16 +560,25 @@ class CharButton extends UIBase
   }
   press(buttonId)
   {
+    charButtons.forEach((b)=>{b.setDirty();});
     currentChar = this.c;
+    if(lastCharButton != undefined)
+      lastCharButton.setDirty();
+    lastCharButton = this;
+    this.setDirty();
     updateDisplay();
   }
   render()
   {
     let current = this.c == currentChar;
+    if(current)
+      lastCharButton = this;
     d.draw(this.x,this.y,this.c,current?"black":"white",current?"white":"black"); 
   }
 }
 
+var lastBGButton;
+var lastFGButton;
 class ColorButton extends UIBase
 {
   constructor(x,y,w,h,color)
@@ -479,25 +592,38 @@ class ColorButton extends UIBase
   pointerOver(x,y)
   {
     this.over = true;
+    this.setDirty();
     updateDisplay();
   }
   pointerOut()
   {
     this.over = false;
+    this.setDirty();
     updateDisplay();
   }
 
   press(buttonId)
   {
+    colorButtons.forEach((b)=>{b.setDirty();});
     if(buttonId == 0)
     {
+      if(lastFGButton != undefined)
+      {
+        lastFGButton.setDirty();
+      }
+      lastFGButton = this;
       currentFgColor = this.color;
-
     }
     else if(buttonId == 1)
     {
+      if(lastBGButton != undefined)
+      {
+        lastBGButton.setDirty();
+      }
+      lastBGButton = this;
       currentBgColor = this.color;
     }
+    this.setDirty();
     updateDisplay();
   }
   render()
@@ -525,12 +651,15 @@ rootUI.addChild(drawArea);
 
 var changeMode = function(newMode)
 {
+  if(currentMode.cleanupOnExit != undefined)
+    currentMode.cleanupOnExit();
   rootUI.removeChild(currentMode);
   rootUI.addChild(newMode);
   currentMode = newMode;
 }
 let inputYPosition = 30;
 var drawModeButton = new ModeButton(1, inputYPosition++, "Draw", drawArea);
+lastModeButton = drawModeButton;
 rootUI.addChild(drawModeButton);
 
 var lineDrawModeButton = new ModeButton(1, inputYPosition++, "Line", lineDrawArea);
@@ -568,21 +697,26 @@ inputYPosition++;
 var clearCanvasButton = new TextButton(1,inputYPosition++,"Clear Canvas");
 clearCanvasButton.press = function(){clearCanvas();updateDisplay();};
 rootUI.addChild(clearCanvasButton);
-
+var colorButtons = [];
 for (let x = 0; x < 16; x++)
 {
   for(let y = 0; y < 12; y++)
   {
-    rootUI.addChild(new ColorButton(x,y,1,1, ROT.Color.toRGB(baseColors[x+y*16])));
+    let cb = new ColorButton(x,y,1,1, ROT.Color.toRGB(baseColors[x+y*16]));
+    colorButtons.push(cb);
+    rootUI.addChild(cb);
   }
 }
 // add character buttons
+var charButtons = [];
 for (let x = 0; x < 16; x++)
 {
   for(let y = 0; y < 16; y++)
   {
     let charVal = codePage437.characters[x+y*16];
-    rootUI.addChild(new CharButton(x,y+12,charVal));
+    let cb = new CharButton(x,y+12,charVal);
+    charButtons.push(cb);
+    rootUI.addChild(cb);
   }
 }  
  
@@ -636,11 +770,6 @@ document.onkeyup = function(e)
 
 var updateDisplay = function()
 {
-  // draw the layers
-  for(let k in layer)
-  {
-    drawCell(layer[k]);
-  }
   // draw the ui
   rootUI.renderLoop();
 }

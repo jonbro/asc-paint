@@ -8,6 +8,7 @@ class UIBase
     this.height = height;
     this.width = width;
     this.children = [];
+    this.dirty = true;
   }
   addChild(child)
   {
@@ -32,18 +33,20 @@ class UIBase
   keypress(keyCode)
   {
   }
+  setDirty()
+  {
+    this.dirty = true;
+  }
   renderLoop()
   {
     this.children.forEach(function(c){
       c.renderLoop();
-      c.render();
     });
-    this.render();
+    if(this.dirty)
+      this.render();
+    this.dirty = false;
   }
-  render()
-  {
-    
-  }
+  render(){}
   // not going to support bubbling right now
   // this function tries to find the lowest possible child
   // which will consume its events, then passes it to the
