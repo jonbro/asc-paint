@@ -5,6 +5,9 @@ Make cool text mode drawings with 256 colors. Will save as you go! all the avail
 
 CHANGE LOG
 ==========
+*12/18/18*
+- wrote a new display class, makes for much faster paste operations, paves the way for doing fills and other operations that require touching many cells
+
 *12/14/18*
 - switched to a image tileset, paves the way for adding more character palettes
 - this introduced a few character bugs, and also made the performance of the paste operation slightly worse, though everything else got better.
