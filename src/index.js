@@ -54,7 +54,14 @@ if(path.length == 2)
     .then(function(resp) {
       resp.json().then(function(data) {
         layer = data;
-        updateDisplay();
+        // do the initial draw
+        for(let x=16;x<80;x++)
+        {
+          for(let y=0;y<40;y++)
+          {
+            redrawCell(x,y);
+          }
+        }
       });
 
         // Your code for handling the data you get from the API
