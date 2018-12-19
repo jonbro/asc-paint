@@ -1,12 +1,13 @@
-import * as ROT from "rot-js"
+import {Display} from "./Display"
 import {UIBase} from "./UIElements"
-
+import {Color} from "rot-js"
 const codePage437 = require('./codePage437.json');
 const baseColors = require('./baseColors.json').colors;
 var imgReady = false;
-var tileSet = document.createElement("img");
-tileSet.src = "https://cdn.glitch.com/3a552aa6-77c2-462f-b211-c1e0fca2d303%2Foie_transparent.png?1544837688896";
+var tileSet = "https://cdn.glitch.com/8d36bd76-da56-4143-81e6-fc4606765fd0%2Fc64_petscii.png?1545184518628";
+tileSet = "https://cdn.glitch.com/3a552aa6-77c2-462f-b211-c1e0fca2d303%2Foie_transparent.png?1544837688896"
 var tilemap = {};
+
 for (let x = 0; x < 16; x++)
 {
   for(let y = 0; y < 16; y++)
@@ -24,13 +25,18 @@ var o = {
   tileColorize: true,
 	width: 80,
 	height: 40,
-  fontSize: 18,
   tileSet: tileSet,
   tileMap: tilemap
 }
     //https://cdn.glitch.com/3a552aa6-77c2-462f-b211-c1e0fca2d303%2Fcp437_10x16_terminal.png?1543891565805
-var d = new ROT.Display(o);
-
+var d = new Display(o);
+for(var x=0;x<o.width;x++)
+{
+  for(var y=0;y<o.height;y++)
+  {
+    d.draw(x,y," ",0x00,0x00);
+  }
+}
 document.body.appendChild(d.getContainer());
 
 var layer = {};
@@ -199,6 +205,25 @@ function calculateLine (x1,y1, x2,y2) {
 }
 
 /// UI COMPONENTS ///
+
+// should auto grow to include the bounds of the child elements
+class Panel extends UIBase
+{
+  constructor(title, x,y)
+  {
+    super(x,y,0,0);
+    this.title = title;
+  }
+  addChild(child)
+  {
+    super.addChild(child);
+  }
+  removeChild(child)
+  {
+    super.removeChild(child);
+  }
+  
+}
 class DrawArea extends UIBase
 {
   constructor(x,y,w,h)
@@ -585,7 +610,7 @@ class ColorButton extends UIBase
   {
     super(x,y,w,h);
     this.color = color;
-    let colorArray = ROT.Color.fromString(this.color);
+    let colorArray = this.color;
     let avgColor = (colorArray[0]+colorArray[1]+colorArray[2])/3;
     this.textColor = avgColor<128?"white":"black";
   }
@@ -702,7 +727,12 @@ for (let x = 0; x < 16; x++)
 {
   for(let y = 0; y < 12; y++)
   {
-    let cb = new ColorButton(x,y,1,1, ROT.Color.toRGB(baseColors[x+y*16]));
+    let bColor = baseColors[x+y*16];
+    let c = (bColor[0]&0xff)
+        | (bColor[1]&0xff)<<8
+        | (bColor[2]&0xff)<<16
+        | 0xff < 24;
+    let cb = new ColorButton(x,y,1,1, bColor);
     colorButtons.push(cb);
     rootUI.addChild(cb);
   }
@@ -721,8 +751,8 @@ for (let x = 0; x < 16; x++)
 }  
  
 var mousePressed = false;
-var currentFgColor = "white";
-var currentBgColor = "black";
+var currentFgColor = 0xffffff;
+var currentBgColor = 0x000000;
 var currentChar = "-";
 
 /// INPUT HANDLING ///
