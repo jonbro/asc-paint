@@ -5,6 +5,9 @@ Make cool text mode drawings with 256 colors. Will save as you go! all the avail
 
 CHANGE LOG
 ==========
+*12/21/18*
+- added fill mode
+
 *12/18/18*
 - wrote a new display class, makes for much faster paste operations, paves the way for doing fills and other operations that require touching many cells
 
@@ -29,24 +32,25 @@ CHANGE LOG
 - make the character selection work again
 - added foreground background display on the palette
 
-TODO
-====
-- figure out how to handle my short / wide screen
-  - move some of the tool panels to the right?
-- make saving lighter weight
-- undo / redo
-- crt effect
-- export
-- layers
-- multiplayer
-- hover effects on the text buttons
-- different character palettes
-- move the display / raw input handling stuff to a module
+TODO ALPHA
+==========
 - draw modes
   - fill
   - rect
   - oval / circle
-- have an animation loop that calls render on dirty ui elements
+- layers
+- redo the save file format to be cleaner
+- hover effects on the text buttons
+- different character palettes
+
+TODO BETA
+=========
+- figure out how to handle my short / wide screen
+  - move some of the tool panels to the right?
+- undo / redo
+- crt effect
+- export
+- multiplayer
 - look into browsersync for autorefresh (only matters for local dev)
 
 

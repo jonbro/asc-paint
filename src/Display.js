@@ -149,7 +149,6 @@ export class Display
 
   eventToPosition(e)
   {
-    console.log("requesting event position");
     let x, y;
     if ("touches" in e) {
         x = e.touches[0].clientX;
@@ -255,7 +254,6 @@ export class Display
     this.dirty = false;
     this.drawBufferImage.data.set(this.canvasbuf8);
     this.context.putImageData(this.drawBufferImage, 0, 0);
-    console.log("requesting animation frame");
     requestAnimationFrame(()=>{d.drawInternal()});
   }
 }

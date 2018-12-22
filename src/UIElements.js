@@ -1,5 +1,6 @@
-//
-class UIBase
+import {Display} from "./Display"
+
+export class UIBase
 {
   constructor(x, y, width, height)
   {
@@ -115,5 +116,19 @@ class UIBase
   }
 }
 
+export class TextButton extends UIBase
+{
+  constructor(x,y,text)
+  {
+    super(x,y,text.length,1);
+    this.text = text;
+    this.textColor = "white";
+  }
+  render()
+  {
+    Display.display.drawText(this.x,this.y,"%c{"+this.textColor+"}"+this.text);
+  }
+}
 
-UIBase.lastOver = null;exports.UIBase = UIBase;
+
+UIBase.lastOver = null;UIBase.display = null;
