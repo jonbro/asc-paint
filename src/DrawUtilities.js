@@ -32,6 +32,40 @@ export function drawSquare(x,y,width,height)
   return dirtyCells;
 }
 
+export function getSquareCells(x,y,width,height,outline)
+{
+  let dirtyCells = [];
+  if(!outline)
+  {
+    for(let _x=x;_x<x+width;_x++)
+    {    
+      for(let _y=y;_y<y+height;_y++)
+      {
+        dirtyCells.push([_x,_y]);
+      }
+    }
+  }
+  else
+  {
+    for(let _x=x+1;_x<width+x;_x++)
+    {
+      dirtyCells.push([_x,y]);
+      dirtyCells.push([_x,y+height]);
+    }
+
+    for(let _y=y+1;_y<height+y;_y++)
+    {
+      dirtyCells.push([x,_y]);
+      dirtyCells.push([x+width,_y]);
+    }
+    dirtyCells.push([x,y]);
+    dirtyCells.push([x,y+height]);
+    dirtyCells.push([x+width,y]);
+    dirtyCells.push([x+width,y+height]);
+  }
+  return dirtyCells;
+}
+
 // from here: https://stackoverflow.com/questions/4672279/bresenham-algorithm-in-javascript
 export function calculateLine (x1,y1, x2,y2) {
   var coordinatesArray = new Array();

@@ -1,5 +1,8 @@
 import {UIBase} from "./UIElements"
 import {Display} from "./Display"
+import {CharButton} from "./components/CharButton";
+import {ColorButton} from "./components/ColorButton";
+
 function drawCell(cellData)
 {
   let v = cellData;
@@ -25,8 +28,8 @@ export class Drawing
     let char = this.currentChar;
     let bg = this.currentBG;
     let fg = this.currentFG;
-    this.currentBG = 0x000000;
-    this.currentFG = 0xFFFFFF;
+    this.currentBG = 0xFF000000;
+    this.currentFG = 0xFFFFFFFF;
     this.currentChar = " ";
 
     for(let x=0;x<this.width;x++)
@@ -52,7 +55,7 @@ export class Drawing
     //console.log(x,y, res);
     if(this.layers[layer] == undefined || x+y*this.width == NaN || res == undefined)
     {
-      return {"char": " ", "fgColor":0xFFFFFF, "bgColor":0x00000};
+      return {"char": " ", "fgColor":0xFFFFFFFF, "bgColor":0xFF00000};
     }
     return res;
   }
@@ -66,15 +69,19 @@ export class Drawing
       "char":val.char,
       "x":x,
       "y":y,
-      "fgColor":val.fgColor,
-      "bgColor":val.bgColor
+      "fgColor":Display.convertColor(val.fgColor),
+      "bgColor":Display.convertColor(val.bgColor)
     };
     this.layers[layer][x+y*this.width] = cData;
     this.redrawCell(x,y);
   }
   setData(data)
   {
-    this.layers = data;
+    if(data.version == undefined)
+    {
+      return;
+    }
+    this.layers = data.layers;
   }
   redrawCell(x,y)
   {
@@ -85,7 +92,7 @@ export class Drawing
     }
     else
     {
-      drawCell({"x":x,"y":y,"char": " ", "fgColor":0xFFFFFF, "bgColor":0x00000});
+      drawCell({"x":x,"y":y,"char": " ", "fgColor":0xFFFFFFFF, "bgColor":0xFF00000});
     }
   }
   redrawAll()
@@ -116,8 +123,8 @@ export class Drawing
       "char":char,
       "x":x,
       "y":y,
-      "fgColor":fg,
-      "bgColor":bg
+      "fgColor":Display.convertColor(fg),
+      "bgColor":Display.convertColor(bg)
     };
     this.set(x,y,cData);
   }
@@ -127,15 +134,18 @@ export class Drawing
     this.currentChar = v.char;
     this.currentFG = v.fgColor;
     this.currentBG = v.bgColor;
+    CharButton.updateAll();
+    ColorButton.updateAll();
   }
   deserialize(jsonString)
   {
-    console.log(jsonString);
-    this.layers = JSON.parse(jsonString);
+    
+    let data = JSON.parse(jsonString);
+    this.setData(data);
   }
   serialize()
   {
-    return JSON.stringify(this.layers);
+    return JSON.stringify({layers:this.layers, version:2});
   }
 }
 Drawing.currentDrawing = null;

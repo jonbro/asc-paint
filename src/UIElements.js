@@ -1,9 +1,11 @@
 import {Display} from "./Display"
 
+let uid = 0;
 export class UIBase
 {
   constructor(x, y, width, height)
   {
+    this.uid = uid++;
     this.x = x;
     this.y = y;
     this.height = height;
@@ -60,6 +62,10 @@ export class UIBase
          && UIBase.lastOver.pointerOut)
       {
         UIBase.lastOver.pointerOut();
+      }
+      if(UIBase.hoverCallback != undefined)
+      {
+        UIBase.hoverCallback(e);
       }
       e.pointerOver(x,y);
       UIBase.lastOver = e;

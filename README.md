@@ -5,6 +5,9 @@ Make cool text mode drawings with 256 colors. Will save as you go! all the avail
 
 CHANGE LOG
 ==========
+*12/23/18*
+- added rect mode
+
 *12/21/18*
 - added fill mode
 
@@ -34,21 +37,17 @@ CHANGE LOG
 
 TODO ALPHA
 ==========
-- draw modes
-  - fill
-  - rect
-  - oval / circle
-- layers
-- redo the save file format to be cleaner
-- hover effects on the text buttons
-- different character palettes
+- release on itch / twitter / reddit
 
 TODO BETA
 =========
-- figure out how to handle my short / wide screen
-  - move some of the tool panels to the right?
+- different character palettes
+- oval / circle draw mode
 - undo / redo
 - crt effect
+- layers
+- redo the save file format to be cleaner
+- hover effects on the text buttons
 - export
 - multiplayer
 - look into browsersync for autorefresh (only matters for local dev)

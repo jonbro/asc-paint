@@ -1,6 +1,7 @@
 import {UIBase} from "../UIElements"
 import {Drawing} from "../Drawing"
 import {Display} from "../Display"
+import {HelpLine} from "./HelpLine"
 
 var lastCharButton;
 var charButtons = [];
@@ -11,6 +12,8 @@ export class CharButton extends UIBase
   {
     super(x,y,1,1);
     this.c = c;
+    charButtons.push(this);
+    HelpLine.help.assignHelpText(this, "left click to set char");
   }
   press(buttonId)
   {
@@ -28,4 +31,10 @@ export class CharButton extends UIBase
       lastCharButton = this;
     Display.display.draw(this.x,this.y,this.c,current?"black":"white",current?"white":"black"); 
   }
+}
+
+CharButton.updateAll = () => {
+  charButtons.forEach(b=>{
+    b.setDirty();
+  });
 }

@@ -2,7 +2,7 @@ import {UIBase} from "../UIElements";
 import {Drawing} from "../Drawing";
 import * as DrawUtilities from "../DrawUtilities"
 
-export class LineDrawArea extends UIBase
+export class RectDrawArea extends UIBase
 {
   press(buttonId, x,y)
   {
@@ -21,9 +21,11 @@ export class LineDrawArea extends UIBase
   {
     if((1<<buttonId) == 1)
     {
-      let drawPoints = DrawUtilities.calculateLine(this.startX, this.startY, this.endX, this.endY);
+      let e = this;
+      let drawPoints = DrawUtilities.getSquareCells(this.startX, this.startY, this.endX-this.startX, this.endY-this.startY);
       drawPoints.forEach(function(p){
-        Drawing.currentDrawing.drawWithCurrentSettings(p[0],p[1]);
+        Drawing.currentDrawing.drawWithCurrentSettings(p[0], p[1]);
+        e.lastPointSet.push(p);
       });
     }
     this.pressDown = this.pressDown & ~(1<<buttonId);
@@ -50,7 +52,7 @@ export class LineDrawArea extends UIBase
         });
       }
       this.lastPointSet = [];
-      let drawPoints = DrawUtilities.calculateLine(this.startX, this.startY, this.endX, this.endY);
+      let drawPoints = DrawUtilities.getSquareCells(this.startX, this.startY, this.endX-this.startX, this.endY-this.startY);
       let e = this;
       drawPoints.forEach(function(p){
         Drawing.currentDrawing.drawTempWithCurrentSettings(p[0], p[1]);
