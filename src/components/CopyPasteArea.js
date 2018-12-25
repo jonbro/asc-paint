@@ -22,6 +22,8 @@ export class PasteHandler extends UIBase
         var c = Object.assign({},clipboard[k]);
         c.x += this.offsetX;
         c.y += this.offsetY;
+        if(c.x > this.x+this.width-1 || c.y>this.y+this.height-1)
+          continue;
         Drawing.currentDrawing.set(c.x,c.y,c);
       }
       this.setDirty();
@@ -42,6 +44,8 @@ export class PasteHandler extends UIBase
       var c = Object.assign({},clipboard[k]);
       c.x += this.offsetX;
       c.y += this.offsetY;
+      if(c.x > this.x+this.width-1 || c.y>this.y+this.height-1)
+        continue;
       dirtyKeys[c.x+","+c.y] = true;
       newDirtyCells.push([c.x,c.y]);
       Drawing.currentDrawing.drawCellTemp(c);

@@ -190,34 +190,12 @@ export class Display
       fg = this.rand()|(0xff<<24);
       bg = this.rand()|(0xff<<24);
       */
-      if(typeof(fg) == "string")
-      {
-        fg = Color.fromString(fg);
-      }
-      if(typeof(fg) == "object")
-      {
-        // convert to our good representation
-        fg = (fg[0]&0xff)
-        | (fg[1]&0xff)<<8
-        | (fg[2]&0xff)<<16
-        | 0xff < 24;
-      }
+      fg = Display.convertColor(fg);
       if(bg == undefined)
       {
         bg = 0x00;
       }
-      if(typeof(bg) == "string")
-      {
-        bg = Color.fromString(bg);
-      }
-      if(typeof(bg) == "object")
-      {
-        // convert to our good representation
-        bg = (bg[0]&0xff)
-        | (bg[1]&0xff)<<8
-        | (bg[2]&0xff)<<16
-        | 0xff < 24;
-      }
+      bg = Display.convertColor(bg);
       this.drawTile(tile[0], tile[1], x*this.options.tileWidth, y*this.options.tileHeight, fg, bg);
     }
   }
@@ -258,3 +236,19 @@ export class Display
   }
 }
 
+Display.convertColor = function(c)
+{
+  if(typeof(c) == "string")
+  {
+    c = Color.fromString(c);
+  }
+  if(typeof(c) == "object")
+  {
+    // convert to our good representation
+    c = (c[0]&0xff)
+    | (c[1]&0xff)<<8
+    | (c[2]&0xff)<<16
+    | 0xff < 24;
+  }
+  return c;
+}

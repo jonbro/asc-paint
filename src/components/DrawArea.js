@@ -1,5 +1,6 @@
 import {UIBase} from "../UIElements";
 import {Drawing} from "../Drawing";
+import {HelpLine} from "./HelpLine";
 
 export class DrawArea extends UIBase
 {
@@ -7,6 +8,7 @@ export class DrawArea extends UIBase
   {
     super(x,y,w,h);
     this.buttonDown = 0;
+    HelpLine.help.assignHelpText(this, "left click to draw / right click to pick up color + char");
   }
   draw(x,y)
   {

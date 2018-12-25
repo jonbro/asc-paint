@@ -9,9 +9,12 @@ import {FillArea} from "./components/FillArea"
 import {LineDrawArea} from "./components/LineDrawArea"
 import {CopyHandler, PasteHandler} from "./components/CopyPasteArea"
 import {TextInputArea} from "./components/TextInputArea"
+import {RectDrawArea} from "./components/RectDrawArea"
 import {ModeButton} from "./components/ModeButton"
 import {ColorButton} from "./components/ColorButton"
 import {CharButton} from "./components/CharButton"
+import {LayerPanel} from "./components/LayerPanel"
+import {HelpLine} from "./components/HelpLine";
 
 import * as DrawUtilities from "./DrawUtilities"
 const codePage437 = require('./codePage437.json');
@@ -38,7 +41,7 @@ var o = {
   tileHeight: 16,
   tileColorize: true,
 	width: 80,
-	height: 40,
+	height: 42,
   tileSet: tileSet,
   tileMap: tilemap
 }
@@ -52,6 +55,10 @@ for(var x=0;x<o.width;x++)
   {
     d.draw(x,y," ",0x00,0x00);
   }
+}
+for(var x=0;x<o.width;x++)
+{
+  d.draw(x,40," ", 0x00, 0x222222);
 }
 document.body.appendChild(d.getContainer());
 
@@ -107,12 +114,20 @@ window.onbeforeunload = function (e) {
 
 /// SETUP UI COMPONENTS ///
 var rootUI = new UIBase(0,0,80,40);
+rootUI.addChild(new HelpLine(0,41,80,1));
+
+//var layerPanel = new LayerPanel(79,0,16,10);
 var drawArea = new DrawArea(16,0,64,40);
 var lineDrawArea = new LineDrawArea(16,0,64,40);
+var rectDrawArea = new RectDrawArea(16,0,64,40);
 var copyArea = new CopyHandler(16,0,64,40);
 var pasteArea = new PasteHandler(16,0,64,40);
 var textInputArea = new TextInputArea(16,0,64,40);
 var fillArea = new FillArea(16,0,64,40);
+
+
+
+//rootUI.addChild(layerPanel);
 
 var currentMode = drawArea;
 rootUI.addChild(drawArea);
@@ -127,7 +142,7 @@ var changeMode = function(newMode)
   rootUI.addChild(newMode);
   currentMode = newMode;
 }
-var setupModeButton = function(text, mode)
+var setupModeButton = function(text, mode, help)
 {
   let mb = new ModeButton(1, inputYPosition++, text,mode,changeMode);
   rootUI.addChild(mb);
@@ -135,26 +150,37 @@ var setupModeButton = function(text, mode)
   {
     mb.press();
   }
+  HelpLine.help.assignHelpText(mb, help);
 }
 var modeButtons = [
-  ["Draw", drawArea],
-  ["Line", lineDrawArea],
-  ["Text", textInputArea],
-  ["Copy", copyArea],
-  ["Paste", pasteArea],
-  ["Fill", fillArea],
+  ["Draw", drawArea, "draw characters"],
+  ["Line", lineDrawArea, "draw lines"],
+  ["Rect", rectDrawArea, "create filled rectangles"],
+  ["Text", textInputArea, "write text"],
+  ["Copy", copyArea, "copy from canvas"],
+  ["Paste", pasteArea, "paste to canvas"],
+  ["Fill", fillArea, "fill area / paint bucket"],
 ];
 
-let inputYPosition = 30;
+let inputYPosition = 29;
 modeButtons.forEach((mb)=>{
-  setupModeButton(mb[0],mb[1]);
+  setupModeButton(mb[0],mb[1],mb[2]);
 });
 
 inputYPosition++;
 
-var saveButton = new TextButton(1,inputYPosition++,"Save");
+const copyToClipboard = str => {
+  const el = document.createElement('textarea');
+  el.value = str;
+  document.body.appendChild(el);
+  el.select();
+  document.execCommand('copy');
+  document.body.removeChild(el);
+};
+
+var saveButton = new TextButton(1,inputYPosition++,"Share");
+HelpLine.help.assignHelpText(saveButton, "Stores to database, creates unique url for sharing");
 saveButton.press = function(){
-  
   var xhr = new XMLHttpRequest();
   var url = "/save";
   xhr.open("POST", url, true);
@@ -172,8 +198,10 @@ rootUI.addChild(saveButton);
 inputYPosition++;
 
 var clearCanvasButton = new TextButton(1,inputYPosition++,"Clear Canvas");
+HelpLine.help.assignHelpText(clearCanvasButton, "Clears the current drawing, start fresh. There is no confirmation!!!");
 clearCanvasButton.press = function(){drawing.clear();};
 rootUI.addChild(clearCanvasButton);
+
 
 var colorButtons = [];
 for (let x = 0; x < 16; x++)

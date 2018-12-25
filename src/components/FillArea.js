@@ -118,9 +118,19 @@ export class FillArea extends UIBase
       //console.log(Drawing.currentDrawing);
       //return;
       this.filled = {};
+      console.log(startVal);
+      let count = 0;
       floodFillScanline(x, y, Drawing.currentDrawing.width, Drawing.currentDrawing.height, false, (x,y)=>{
         let n = Drawing.currentDrawing.get(x,y);
-        return this.filled[x+","+y] == undefined && n.char == startVal.char;   
+        if(count==0)
+        {
+          count++;
+          console.log(n);
+        }
+        return this.filled[x+","+y] == undefined
+          && (n.char == startVal.char
+          && n.fgColor == startVal.fgColor
+          && n.bgColor == startVal.bgColor);   
       }, (x,y)=>{
         // store in a temp buffer
         this.filled[x+","+y] = true;
