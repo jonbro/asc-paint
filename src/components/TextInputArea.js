@@ -1,10 +1,11 @@
 import {UIBase} from "../UIElements";
 import {Drawing} from "../Drawing";
-
+import {Display} from "../Display";
 export class TextInputArea extends UIBase
 {
   press(buttonId, x,y)
   {
+    x -= this.x;
     if((1<<buttonId) == 2)
     {
       Drawing.currentDrawing.eyeDrop(x,y);
@@ -51,7 +52,7 @@ export class TextInputArea extends UIBase
     // handle backspace
     if(keyCode == 8)
     {
-      drawToLayer(--this.insertX,this.insertY,' ',"black","black");
+      Drawing.currentDrawing.draw(--this.insertX,this.insertY,' ',"black","black");
       this.setDirty();
       return;
     }
@@ -64,7 +65,7 @@ export class TextInputArea extends UIBase
       return;
     }
     let char = e.key;
-    drawToLayer(this.insertX++,this.insertY,char,currentFgColor,currentBgColor);
+    Drawing.currentDrawing.draw(this.insertX++,this.insertY,char,Drawing.currentDrawing.currentFG,Drawing.currentDrawing.currentBG);
     this.setDirty();
   }
   render()
@@ -72,9 +73,9 @@ export class TextInputArea extends UIBase
     if(this.insertX == undefined)
       return;
     if(this.lastCursor != undefined)
-      redrawCell(this.lastCursor[0], this.lastCursor[1]);
+      Drawing.currentDrawing.redrawCell(this.lastCursor[0], this.lastCursor[1]);
     this.lastCursor = [this.insertX, this.insertY];
     // render a cursor
-    d.draw(this.insertX, this.insertY, '|', currentFgColor, currentBgColor); 
+    Display.display.draw(this.insertX+this.x, this.insertY, '|', Drawing.currentDrawing.currentFG, Drawing.currentDrawing.currentBG); 
   }
 }
