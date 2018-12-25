@@ -5,6 +5,11 @@ Make cool text mode drawings with 256 colors. Will save as you go! all the avail
 
 CHANGE LOG
 ==========
+*12/25/18*
+- bunch of bug fixes
+- added helpline
+- cut a bunch of features from the 'alpha' release
+
 *12/23/18*
 - added rect mode
 
