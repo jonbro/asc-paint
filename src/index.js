@@ -240,13 +240,38 @@ var currentChar = "-";
 /// INPUT HANDLING ///
 var lastButtonState = 0;
 d.getContainer().oncontextmenu = function(e){return false;};
+if ('ontouchstart' in window) {
+  d.getContainer().addEventListener('touchstart',function(e)
+  {
+    if(e.changedTouches.length == 1)
+      e.preventDefault();
+    let p = d.eventToPosition(e);
+    rootUI.processPress(p[0], p[1],0);
+  });
+  d.getContainer().addEventListener('touchmove',function(e)
+  {
+    if(e.changedTouches.length == 1)
+      e.preventDefault();
+    let p = d.eventToPosition(e);
+    rootUI.processMove(p[0], p[1]);
+  });
+  d.getContainer().addEventListener('touchend',function(e)
+  {
+    let p = d.eventToPosition(e);
+    rootUI.processRelease(p[0], p[1],0);
+    lastButtonState = e.buttons;
+  });
+}else
+{
 d.getContainer().onmousemove = function(e)
 {
+  e.preventDefault();
   let p = d.eventToPosition(e);
   rootUI.processMove(p[0], p[1]);
 }
 d.getContainer().onmousedown = function(e)
 {
+  e.preventDefault();
   let p = d.eventToPosition(e);
   lastButtonState = e.buttons;
   rootUI.processPress(p[0], p[1],e.buttons==1?0:1);
@@ -257,6 +282,7 @@ d.getContainer().onmouseup = function(e)
   let buttonUp = lastButtonState & (~e.buttons);
   rootUI.processRelease(p[0], p[1],buttonUp==1?0:1);
   lastButtonState = e.buttons;
+}
 }
 var shiftDown = false;
 document.onkeydown = function(e)
