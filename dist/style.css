@@ -9,7 +9,7 @@ canvas
   width: 800px;
   margin: 0 auto;
   display: block;
-  padding: 10px;
+  padding: 0 0;
   background: #000;
   text-align:center;
 }

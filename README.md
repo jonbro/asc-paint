@@ -40,18 +40,19 @@ CHANGE LOG
 - make the character selection work again
 - added foreground background display on the palette
 
-TODO ALPHA
-==========
-- release on itch / twitter / reddit
+BUGS
+====
+- Rect draw doesn't work when the start position is higher than the end position
+- Rect draw can't fill the last line of the drawing.
 
 TODO BETA
 =========
+- redo the save file format to be cleaner (http://pieroxy.net/blog/pages/lz-string/index.html)
 - different character palettes
 - oval / circle draw mode
 - undo / redo
 - crt effect
 - layers
-- redo the save file format to be cleaner
 - hover effects on the text buttons
 - export
 - multiplayer
