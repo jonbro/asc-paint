@@ -9,7 +9,7 @@ process.on('uncaughtException', (e) => {
 app.use(express.static('dist'));
 app.use(bodyParser.text({extended:true, limit:'20mb'})); // for parsing application/x-www-form-urlencoded
 
-var db = new sqlite3.Database('./database.sqlite', (err) => {
+var db = new sqlite3.Database('.data/database.sqlite', (err) => {
   if (err) {
     console.error(err.message);
   }
