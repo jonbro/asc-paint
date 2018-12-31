@@ -43,16 +43,21 @@ CHANGE LOG
 BUGS
 ====
 - Rect draw doesn't work when the start position is higher than the end position
+- weird stuff going on with copy paste - it seems like it is copying a bigger area than expected.
 - Rect draw can't fill the last line of the drawing.
 
-TODO BETA
+TODO
 =========
-- redo the save file format to be cleaner (http://pieroxy.net/blog/pages/lz-string/index.html)
+- redo the save file format to be smaller (http://pieroxy.net/blog/pages/lz-string/index.html)
+- import / export to rexpaint support, see: https://www.gridsagegames.com/rexpaint/resources.html (this will probably do the same as the above)
+- ascii mouse cursor in draw mode
+- grid display
+- layers
+- import / export to playscii
 - different character palettes
 - oval / circle draw mode
 - undo / redo
 - crt effect
-- layers
 - hover effects on the text buttons
 - export
 - multiplayer

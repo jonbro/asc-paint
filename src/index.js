@@ -1,3 +1,4 @@
+var forceNew = true;
 
 import {Display} from "./Display"
 import {UIBase, TextButton} from "./UIElements"
@@ -72,7 +73,7 @@ if(path.length == 2)
   if(n.toString() == path[1])
   {
     foundServerData = true;
-        const url='/load/'+n;
+    const url='/load/'+n;
 
     fetch(url) // Call the fetch function passing the url of the API as a parameter
     .then(function(resp) {
@@ -95,7 +96,7 @@ var storageContents = window.localStorage.getItem("currentBuffer");
 if(foundServerData)
 {
 }
-else if(storageContents == undefined || storageContents == "undefined")
+else if(forceNew || storageContents == undefined || storageContents == "undefined")
 {
   Drawing.currentDrawing.clear();
 }
@@ -194,6 +195,14 @@ saveButton.press = function(){
   xhr.send(data);
 };
 rootUI.addChild(saveButton);
+
+var exportButton = new TextButton(1,inputYPosition++,"Export");
+HelpLine.help.assignHelpText(exportButton, "returns the file in rexpaint format");
+exportButton.press = function(){
+  Drawing.currentDrawing.exportToRexpaint();
+};
+rootUI.addChild(exportButton);
+
 
 inputYPosition++;
 
@@ -305,7 +314,41 @@ document.onkeyup = function(e)
     shiftDown = false;
   }
 }
-
+ document.addEventListener("drop", function(e) {
+  // prevent default action (open as link for some elements)
+  e.preventDefault();
+  let ev = e;
+  if (ev.dataTransfer.items) {
+    // Use DataTransferItemList interface to access the file(s)
+    for (var i = 0; i < ev.dataTransfer.items.length; i++) {
+      // If dropped items aren't files, reject them
+      if (ev.dataTransfer.items[i].kind === 'file') {
+        var file = ev.dataTransfer.items[i].getAsFile();
+        console.log('items', file);
+        var reader = new FileReader();
+        reader.addEventListener("loadend", function() {
+           // reader.result contains the contents of blob as a typed array
+          console.log(reader.result);
+          // we are just gonna load into the current drawing for now
+          Drawing.currentDrawing.importFromRexpaint(reader.result);
+        });
+        reader.readAsArrayBuffer(file);
+        //console.log('... file[' + i + '].name = ' + file.name);
+      }
+    }
+  } else {
+    // Use DataTransfer interface to access the file(s)
+    for (var i = 0; i < ev.dataTransfer.files.length; i++) {
+      console.log(ev.dataTransfer.files[i]);
+      //console.log('... file[' + i + '].name = ' + ev.dataTransfer.files[i].name);
+    }
+  } 
+  console.log("got drop", e);    
+}, false);
+document.ondragover = function(e)
+{
+    e.preventDefault(); 
+}
 var updateDisplay = function()
 {
   // draw the ui

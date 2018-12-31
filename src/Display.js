@@ -248,7 +248,7 @@ Display.convertColor = function(c)
     c = (c[0]&0xff)
     | (c[1]&0xff)<<8
     | (c[2]&0xff)<<16
-    | 0xff < 24;
+    | 0xff << 24;
   }
   return c;
 }

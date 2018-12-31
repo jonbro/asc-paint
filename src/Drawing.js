@@ -2,6 +2,7 @@ import {UIBase} from "./UIElements"
 import {Display} from "./Display"
 import {CharButton} from "./components/CharButton";
 import {ColorButton} from "./components/ColorButton";
+import {RexPaintCodec} from "./RexPaintCodec"
 
 function drawCell(cellData)
 {
@@ -146,6 +147,41 @@ export class Drawing
   serialize()
   {
     return JSON.stringify({layers:this.layers, version:2});
+  }
+  exportToRexpaint()
+  {
+    // need to fill out the rexpaint data structure with the data that we have currently
+    let rp = new RexPaintCodec();
+    // rebuild the graphics with the correct setup... this is actually handled already, yay
+    rp.layers = this.layers;
+    rp.width = this.width;
+    rp.height = this.height;
+    let data = rp.encode();
+    //console.log(data);
+    var saveByteArray = (function () {
+        var a = document.createElement("a");
+        document.body.appendChild(a);
+        a.style = "display: none";
+        return function (data, name) {
+            var blob = new Blob(data, {type: "octet/stream"}),
+                url = window.URL.createObjectURL(blob);
+            a.href = url;
+            a.download = name;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        };
+    }());
+    saveByteArray([data.buffer], 'export.xp');
+  }
+  importFromRexpaint(buffer)
+  {
+    let rp = new RexPaintCodec();
+    rp.decode(buffer);
+    this.layers = rp.layers;
+    this.width = rp.width;
+    this.height = rp.height;
+    console.log(this);
+    this.redrawAll();
   }
 }
 Drawing.currentDrawing = null;
