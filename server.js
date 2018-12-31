@@ -16,6 +16,9 @@ var db = new sqlite3.Database('.data/database.sqlite', (err) => {
   console.log('Connected to the database.');
 });
 
+// should probably have a better migration solution :0
+db.run("CREATE TABLE IF NOT EXISTS saves (data TEXT);");
+
 app.post('/save', async (req, res, next) => {
   db.run("INSERT INTO saves VALUES (?)", req.body, function(e){
     res.end(this.lastID.toString());
