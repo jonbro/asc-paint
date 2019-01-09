@@ -46,13 +46,19 @@ export class TextInputArea extends UIBase
           this.insertY++;
           break;
       }
+      // clamp to the correct size
+      this.insertY = Math.max(this.y, Math.min(this.y+this.height-1, this.insertY));
+      this.insertX = Math.max(0, Math.min(this.width-1,this.insertX));
+
       this.setDirty();
       return;
     }
     // handle backspace
     if(keyCode == 8)
     {
-      Drawing.currentDrawing.draw(--this.insertX,this.insertY,' ',"black","black");
+      this.insertX = Math.max(0, this.insertX-1);
+      Drawing.currentDrawing.draw(this.insertX,this.insertY,' ',"black","black");
+
       this.setDirty();
       return;
     }
@@ -66,6 +72,15 @@ export class TextInputArea extends UIBase
     }
     let char = e.key;
     Drawing.currentDrawing.draw(this.insertX++,this.insertY,char,Drawing.currentDrawing.currentFG,Drawing.currentDrawing.currentBG);
+    // if insertX went off the right side of the screen, wrap to the start position
+    if(this.insertX > this.width-1)
+    {
+      this.insertX = this.initialX;
+      this.insertY++;
+      // check to make sure insert Y is still good too.
+      this.insertY = Math.max(this.y, Math.min(this.y+this.height-1, this.insertY));
+
+    }
     this.setDirty();
   }
   render()

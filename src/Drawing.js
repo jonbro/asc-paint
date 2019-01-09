@@ -4,12 +4,6 @@ import {CharButton} from "./components/CharButton";
 import {ColorButton} from "./components/ColorButton";
 import {RexPaintCodec} from "./RexPaintCodec"
 
-function drawCell(cellData)
-{
-  let v = cellData;
-  Display.display.draw(v.x+16, v.y, v.char, v.fgColor, v.bgColor);
-}
-
 export class Drawing
 {
   constructor(width, height)
@@ -21,6 +15,8 @@ export class Drawing
     this.currentChar = "-";
     this.width = width;
     this.height = height;
+    // just a blank redraw function incase we are running server side
+    this.drawCallback = ()=>{};
     this.clear();
   }
   // TODO: implement this
@@ -68,8 +64,6 @@ export class Drawing
     }
     let cData = {
       "char":val.char,
-      "x":x,
-      "y":y,
       "fgColor":Display.convertColor(val.fgColor),
       "bgColor":Display.convertColor(val.bgColor)
     };
@@ -78,10 +72,10 @@ export class Drawing
   }
   setData(data)
   {
-    if(data.version == undefined)
-    {
-      return;
-    }
+    // if(data.version == undefined)
+    // {
+    //   return;
+    // }
     this.layers = data.layers;
   }
   redrawCell(x,y)
@@ -89,18 +83,18 @@ export class Drawing
     let val = this.get(x,y);
     if(val != undefined)
     {
-       drawCell(val);
+       this.drawCallback(val, x,y);
     }
     else
     {
-      drawCell({"x":x,"y":y,"char": " ", "fgColor":0xFFFFFFFF, "bgColor":0xFF00000});
+      this.drawCallback({"char": " ", "fgColor":0xFFFFFFFF, "bgColor":0xFF00000}, x,y);
     }
   }
   redrawAll()
   {
-    for(let x=0;x<80-16;x++)
+    for(let x=0;x<this.width;x++)
     {
-      for(let y=0;y<40;y++)
+      for(let y=0;y<this.height;y++)
       {
         this.redrawCell(x,y);
       }
@@ -112,18 +106,16 @@ export class Drawing
   }
   drawTempWithCurrentSettings(x,y)
   {
-    drawCell({"x":x,"y":y,"char": this.currentChar, "fgColor":this.currentFG, "bgColor":this.currentBG});
+    this.drawCallback({"char": this.currentChar, "fgColor":this.currentFG, "bgColor":this.currentBG}, x,y);
   }
-  drawCellTemp(val)
+  drawCellTemp(val, x,y)
   {
-    drawCell(val);
+    this.drawCallback(val,x,y);
   }
   draw(x,y,char,fg,bg)
   {
     let cData = {
       "char":char,
-      "x":x,
-      "y":y,
       "fgColor":Display.convertColor(fg),
       "bgColor":Display.convertColor(bg)
     };
@@ -138,14 +130,21 @@ export class Drawing
     CharButton.updateAll();
     ColorButton.updateAll();
   }
-  deserialize(jsonString)
+  deserializeFromJson(jsonString)
   {
-    
     let data = JSON.parse(jsonString);
     this.setData(data);
   }
   serialize()
   {
+    // always gonna do stuff with rexpaint from here on :)
+    let rp = new RexPaintCodec();
+    // rebuild the graphics with the correct setup... this is actually handled already, yay
+    rp.layers = this.layers;
+    rp.width = this.width;
+    rp.height = this.height;
+    return rp.encode().toString('base64');
+    //return 
     return JSON.stringify({layers:this.layers, version:2});
   }
   exportToRexpaint()

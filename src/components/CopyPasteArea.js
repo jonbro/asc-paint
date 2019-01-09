@@ -17,15 +17,20 @@ export class PasteHandler extends UIBase
     if((buttonId+1) & 1 > 0)
     {
       // copy the clipboard cells into the layer
-      for(let k in clipboard)
-      {
-        var c = Object.assign({},clipboard[k]);
-        c.x += this.offsetX;
-        c.y += this.offsetY;
-        if(c.x > this.x+this.width-1 || c.y>this.y+this.height-1)
-          continue;
-        Drawing.currentDrawing.set(c.x,c.y,c);
-      }
+        for(let k in clipboard)
+        {
+          var c = Object.assign({},clipboard[k]);
+          // extract x,y components
+          let components = k.split(",");
+          let x = parseInt(components[0]);
+          let y = parseInt(components[1]);
+          x += this.offsetX;
+          y += this.offsetY;
+          if(x > this.x+this.width-1 || y>this.y+this.height-1)
+            continue;
+          Drawing.currentDrawing.set(x,y,c);
+        }
+     
       this.setDirty();
     }else
     {
@@ -42,13 +47,17 @@ export class PasteHandler extends UIBase
     for(let k in clipboard)
     {
       var c = Object.assign({},clipboard[k]);
-      c.x += this.offsetX;
-      c.y += this.offsetY;
-      if(c.x > this.x+this.width-1 || c.y>this.y+this.height-1)
+      // extract x,y components
+      let components = k.split(",");
+      let x = parseInt(components[0]);
+      let y = parseInt(components[1]);
+      x += this.offsetX;
+      y += this.offsetY;
+      if(x > this.x+this.width-1 || y>this.y+this.height-1)
         continue;
-      dirtyKeys[c.x+","+c.y] = true;
-      newDirtyCells.push([c.x,c.y]);
-      Drawing.currentDrawing.drawCellTemp(c);
+      dirtyKeys[x+","+y] = true;
+      newDirtyCells.push([x,y]);
+      Drawing.currentDrawing.drawCellTemp(c,x,y);
     }
     // clear out the unupdated cells
     if(this.lastCells!=undefined)
@@ -85,17 +94,16 @@ export class CopyHandler extends UIBase
     // if the button that was released was the left click, capture the buffer
     clipboard = {};
     let bounds = this.getBounds();
-    for(let x=bounds[0]-16; x < bounds[0]+bounds[2];x++)
+    for(let x=bounds[0]; x < bounds[0]+bounds[2];x++)
     {
       for(let y=bounds[1];y<bounds[1]+bounds[3];y++)
       {
         let k = x+","+y;
-        let v = Object.assign({}, Drawing.currentDrawing.get(x,y));
-        v.x = x-bounds[0];
-        v.y = y-bounds[1];
-        clipboard[v.x+","+v.y] = v;
+        let v = Object.assign({}, Drawing.currentDrawing.get(x-this.x,y));
+        clipboard[(x-bounds[0]-this.x)+","+(y-bounds[1])] = v;
       }
     }
+    console.log(clipboard);
     this.endX = this.endY = this.startY = this.startX = 0;
     this.setDirty();
   }
@@ -112,8 +120,9 @@ export class CopyHandler extends UIBase
   {
     if(this.lastBound != undefined)
     {
+      let t = this;
       this.lastBound.forEach(function(p){
-        Drawing.currentDrawing.redrawCell(p[0]-16, p[1]);
+        Drawing.currentDrawing.redrawCell(p[0]-t.x, p[1]);
       });
     }
     this.lastBound = [];

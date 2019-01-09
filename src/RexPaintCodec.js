@@ -136,9 +136,6 @@ export class RexPaintCodec
           cell.bgColor = r << 0
             | g << 8
             | b << 16;
-          // because my format is so silly
-          cell.x = x;
-          cell.y = y;
           currentLayer[x+y*this.width] = cell;
         }
       }

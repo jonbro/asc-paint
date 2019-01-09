@@ -1,4 +1,4 @@
-var forceNew = true;
+var forceNew = false;
 
 import {Display} from "./Display"
 import {UIBase, TextButton} from "./UIElements"
@@ -11,9 +11,12 @@ import {LineDrawArea} from "./components/LineDrawArea"
 import {CopyHandler, PasteHandler} from "./components/CopyPasteArea"
 import {TextInputArea} from "./components/TextInputArea"
 import {RectDrawArea} from "./components/RectDrawArea"
-import {ModeButton} from "./components/ModeButton"
-import {ColorButton} from "./components/ColorButton"
-import {CharButton} from "./components/CharButton"
+
+import {ToolsPanel} from "./components/ToolsPanel"
+import {FilePanel} from "./components/FilePanel"
+import {ColorPanel, ColorButton} from "./components/ColorButton"
+import {Panel} from "./components/Panel"
+import {CharButton, CharPanel} from "./components/CharButton"
 import {LayerPanel} from "./components/LayerPanel"
 import {HelpLine} from "./components/HelpLine";
 
@@ -25,6 +28,8 @@ var imgReady = false;
 //var tileSet = "https://cdn.glitch.com/8d36bd76-da56-4143-81e6-fc4606765fd0%2Fc64_petscii.png?1545184518628";
 var tileSet = "https://cdn.glitch.com/3a552aa6-77c2-462f-b211-c1e0fca2d303%2Foie_transparent.png?1544837688896"
 var tilemap = {};
+
+var leftPanelWidth = 18;
 
 for (let x = 0; x < 16; x++)
 {
@@ -41,7 +46,7 @@ var o = {
   tileWidth: 10,
   tileHeight: 16,
   tileColorize: true,
-	width: 80,
+	width: 82,
 	height: 42,
   tileSet: tileSet,
   tileMap: tilemap
@@ -65,6 +70,13 @@ document.body.appendChild(d.getContainer());
 
 var drawing = new Drawing(80-16,40);
 Drawing.currentDrawing = drawing;
+Drawing.currentDrawing.drawCallback = function(cellData,x,y)
+{
+  let v = cellData;
+  Display.display.draw(x+leftPanelWidth, y, v.char, v.fgColor, v.bgColor);
+}
+
+
 var foundServerData = false;
 var path = window.location.pathname.split('/');
 if(path.length == 2)
@@ -77,8 +89,10 @@ if(path.length == 2)
 
     fetch(url) // Call the fetch function passing the url of the API as a parameter
     .then(function(resp) {
-      resp.json().then(function(data) {
-        drawing.setData(data);
+      resp.text().then(function(data) {
+        console.log(data);
+        drawing.importFromRexpaint(new Buffer(data, 'base64'));
+        //drawing.setData(data);
         // do the initial draw
         drawing.redrawAll();
       });
@@ -96,13 +110,19 @@ var storageContents = window.localStorage.getItem("currentBuffer");
 if(foundServerData)
 {
 }
-else if(forceNew || storageContents == undefined || storageContents == "undefined")
+else if( forceNew || storageContents == undefined || storageContents == "undefined")
 {
   Drawing.currentDrawing.clear();
 }
 else
 {
-  drawing.deserialize(storageContents);
+  try {
+    JSON.parse(storageContents);
+    drawing.deserializeFromJson(storageContents);
+  } catch (e) {
+    // falling back to rexpaint format
+    drawing.importFromRexpaint(new Buffer(storageContents, 'base64'));
+  }
 }
 
 // do the initial draw
@@ -117,59 +137,34 @@ window.onbeforeunload = function (e) {
 var rootUI = new UIBase(0,0,80,40);
 rootUI.addChild(new HelpLine(0,41,80,1));
 
-//var layerPanel = new LayerPanel(79,0,16,10);
-var drawArea = new DrawArea(16,0,64,40);
-var lineDrawArea = new LineDrawArea(16,0,64,40);
-var rectDrawArea = new RectDrawArea(16,0,64,40);
-var copyArea = new CopyHandler(16,0,64,40);
-var pasteArea = new PasteHandler(16,0,64,40);
-var textInputArea = new TextInputArea(16,0,64,40);
-var fillArea = new FillArea(16,0,64,40);
-
-
-
-//rootUI.addChild(layerPanel);
+// setup all the different draw panel modes
+var drawArea = new DrawArea(leftPanelWidth,0,64,40);
+var lineDrawArea = new LineDrawArea(leftPanelWidth,0,64,40);
+var rectDrawArea = new RectDrawArea(leftPanelWidth,0,64,40);
+var copyArea = new CopyHandler(leftPanelWidth,0,64,40);
+var pasteArea = new PasteHandler(leftPanelWidth,0,64,40);
+var textInputArea = new TextInputArea(leftPanelWidth,0,64,40);
+var fillArea = new FillArea(leftPanelWidth,0,64,40);
 
 var currentMode = drawArea;
 rootUI.addChild(drawArea);
 
-var changeMode = function(newMode)
-{
-  if(currentMode.cleanupOnExit != undefined)
-  {
-    currentMode.cleanupOnExit();
-  }
-  rootUI.removeChild(currentMode);
-  rootUI.addChild(newMode);
-  currentMode = newMode;
-}
-var setupModeButton = function(text, mode, help)
-{
-  let mb = new ModeButton(1, inputYPosition++, text,mode,changeMode);
-  rootUI.addChild(mb);
-  if(text == "Draw")
-  {
-    mb.press();
-  }
-  HelpLine.help.assignHelpText(mb, help);
-}
 var modeButtons = [
   ["Draw", drawArea, "draw characters"],
   ["Line", lineDrawArea, "draw lines"],
   ["Rect", rectDrawArea, "create filled rectangles"],
   ["Text", textInputArea, "write text"],
+  ["Fill", fillArea, "fill area / paint bucket"],
   ["Copy", copyArea, "copy from canvas"],
   ["Paste", pasteArea, "paste to canvas"],
-  ["Fill", fillArea, "fill area / paint bucket"],
 ];
 
-let inputYPosition = 29;
-modeButtons.forEach((mb)=>{
-  setupModeButton(mb[0],mb[1],mb[2]);
-});
+rootUI.addChild(new ToolsPanel(0,14+18,modeButtons,rootUI));
+rootUI.addChild(new FilePanel(9, 14+18));
+//var layerPanel = new LayerPanel(79,0,16,10);
 
+let inputYPosition = 60;
 inputYPosition++;
-
 const copyToClipboard = str => {
   const el = document.createElement('textarea');
   el.value = str;
@@ -179,68 +174,16 @@ const copyToClipboard = str => {
   document.body.removeChild(el);
 };
 
-var saveButton = new TextButton(1,inputYPosition++,"Share");
-HelpLine.help.assignHelpText(saveButton, "Stores to database, creates unique url for sharing");
-saveButton.press = function(){
-  var xhr = new XMLHttpRequest();
-  var url = "/save";
-  xhr.open("POST", url, true);
-  xhr.setRequestHeader("Content-type","text/plain;charset=UTF-8");
-  xhr.onreadystatechange = function () {
-      if (xhr.readyState === 4 && xhr.status === 200) {
-        window.location.href = "/" + xhr.responseText;
-      }
-  };
-  var data = drawing.serialize();
-  xhr.send(data);
-};
-rootUI.addChild(saveButton);
-
-var exportButton = new TextButton(1,inputYPosition++,"Export");
-HelpLine.help.assignHelpText(exportButton, "returns the file in rexpaint format");
-exportButton.press = function(){
-  Drawing.currentDrawing.exportToRexpaint();
-};
-rootUI.addChild(exportButton);
-
 
 inputYPosition++;
 
-var clearCanvasButton = new TextButton(1,inputYPosition++,"Clear Canvas");
-HelpLine.help.assignHelpText(clearCanvasButton, "Clears the current drawing, start fresh. There is no confirmation!!!");
-clearCanvasButton.press = function(){drawing.clear();};
-rootUI.addChild(clearCanvasButton);
-
-
-var colorButtons = [];
-for (let x = 0; x < 16; x++)
-{
-  for(let y = 0; y < 12; y++)
-  {
-    let bColor = baseColors[x+y*16];
-    let c = (bColor[0]&0xff)
-        | (bColor[1]&0xff)<<8
-        | (bColor[2]&0xff)<<16
-        | 0xff < 24;
-    let cb = new ColorButton(x,y,1,1, bColor);
-    colorButtons.push(cb);
-    rootUI.addChild(cb);
-  }
-}
 
 // add character buttons
-var charButtons = [];
-for (let x = 0; x < 16; x++)
-{
-  for(let y = 0; y < 16; y++)
-  {
-    let charVal = codePage437.characters[x+y*16];
-    let cb = new CharButton(x,y+12,charVal);
-    charButtons.push(cb);
-    rootUI.addChild(cb);
-  }
-}  
- 
+rootUI.addChild(new CharPanel(0,0,16,16));
+
+// add color buttons
+rootUI.addChild(new ColorPanel(0,18,16,16));
+
 var mousePressed = false;
 var currentFgColor = 0xffffff;
 var currentBgColor = 0x000000;

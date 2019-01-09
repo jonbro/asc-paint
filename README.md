@@ -5,6 +5,14 @@ Make cool text mode drawings with 256 colors. Will save as you go! all the avail
 
 CHANGE LOG
 ==========
+*1/1/18*
+- cleaned up the drawing data format
+- drawing always produces continous points
+- fixed issues with rect drawing
+- made text drawing clamp to the draw area
+- new panel art
+- added import / export to rexpaint (drag & drop a .xp file to import)
+
 *12/25/18*
 - bunch of bug fixes
 - added helpline
@@ -42,14 +50,13 @@ CHANGE LOG
 
 BUGS
 ====
-- Rect draw doesn't work when the start position is higher than the end position
-- weird stuff going on with copy paste - it seems like it is copying a bigger area than expected.
 - Rect draw can't fill the last line of the drawing.
+  - issue here is that when the pointer goes out of a ui component, it stops recieving events, causes all sorts of other issues too. need some way to directly subscribe to events until the pointer goes up.
 
 TODO
 =========
-- redo the save file format to be smaller (http://pieroxy.net/blog/pages/lz-string/index.html)
-- import / export to rexpaint support, see: https://www.gridsagegames.com/rexpaint/resources.html (this will probably do the same as the above)
+- name file before export
+- handle rexpaint transparency
 - ascii mouse cursor in draw mode
 - grid display
 - layers
