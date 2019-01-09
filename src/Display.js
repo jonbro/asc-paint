@@ -1,21 +1,10 @@
 import {Color} from "rot-js"
 import {Text} from "rot-js"
-// welp, it happened. I am rewriting the rotjs display class to get more speed.
-/*
-var o = {
-  layout: "tile",
-  bg: "black",
-  tileWidth: 10,
-  tileHeight: 16,
-  tileColorize: true,
-	width: 120,
-	height: 40,
-  fontSize: 18,
-  tileSet: tileSet,
-  tileMap: tilemap
-}
-*/
+
 // going to keep using rotjs for the color stuff
+// this no longer works directly like rot js - the biggest thing that has changed
+// is that you can provide an offset into the character sheet rather than using the tilemap
+
 export class Display
 {
   constructor(options)
@@ -46,10 +35,43 @@ export class Display
     let d = this;
     this.tileSetImg.onload  = ()=>{d.spriteLoadComplete()};
     this.tileSetImg.crossOrigin = "Anonymous";
-    this.tileSetImg.src = this.options.tileSet;
+    if(this.options.tileSetb64)
+    {
+      this.tileSetImg.src = "data:image/png;base64, "+this.options.tileSetb64;
+    }
+    else
+    {
+      this.tileSetImg.src = this.options.tileSet;
+    }
     this.dirty = false;
     // kick off the draw loop
     this.drawInternal();
+  }
+  setInfo(data)
+  {
+    this.tileinfo = data;
+    if(this.tileSetLoaded)
+    {
+      this.loadFromInfo();
+    }
+    else
+    {
+      this.needsInfoLoad = true;
+    }
+  }
+  loadFromInfo()
+  {
+    console.log("correcting display");
+    // correct the display immediately
+    this.options.tileWidth = this.tileSetImg.width / this.tileinfo.dim[0];
+    this.options.tileHeight = this.tileSetImg.height / this.tileinfo.dim[1];
+    // build the tilemap from the data coming from info
+    let chars = Object.entries(this.tileinfo.chars);
+    for(let i=0;i<chars.length;i++)
+    {
+      this.options.tileMap[chars[i][0]] = [chars[i][1]%this.tileinfo.dim[0]*this.options.tileWidth,Math.floor(chars[i][1]/this.tileinfo.dim[0])*this.options.tileHeight];
+    }
+    console.log(this.options);
   }
   getImageData(img)
   {
@@ -65,6 +87,10 @@ export class Display
   }
   spriteLoadComplete()
   {
+    if(this.needsInfoLoad)
+    {
+      this.loadFromInfo();
+    }
 
     // load the image data from the tiles
     this.tileogData = this.getImageData(this.tileSetImg).data;
@@ -186,10 +212,6 @@ export class Display
     let tile = this.options.tileMap[char];
     if(tile != undefined)
     {
-      /*
-      fg = this.rand()|(0xff<<24);
-      bg = this.rand()|(0xff<<24);
-      */
       fg = Display.convertColor(fg);
       if(bg == undefined)
       {

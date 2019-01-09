@@ -1,5 +1,6 @@
 const express = require("express");
 const sqlite3 = require("sqlite3");
+const charsets = require("charsets");
 var bodyParser = require('body-parser');
 
 const app = express();
@@ -34,6 +35,20 @@ app.get('/load/:id?', function loaderHandler(req, res) {
     console.log(err);
     res.send(row.data);
   });
+});
+app.get("/charset/img/:setName", function(req, res) {
+  var data = charsets.getSet(req.params.setName);
+  var img = Buffer.from(data.img, 'base64');
+  res.writeHead(200, {
+    'Content-Type': 'image/png',
+    'Content-Length': img.length
+  });
+  res.end(img); 
+});
+app.get("/charset/info/:setName", function(req, res) {
+  var data = charsets.getSet(req.params.setName);
+  data.img = null;
+  res.send(data);
 });
 const listener = app.listen(process.env.PORT, () => {
     console.log(`server ready. port: ${listener.address().port}`);
