@@ -140,7 +140,7 @@ export class FillArea extends UIBase
     if(this.tempBuffer != undefined)
     {
       this.tempBuffer.forEach((v)=>{
-        Display.display.draw(v[0]+16,v[1],cd.currentChar, cd.currentFG, cd.currentBG);
+        Display.display.draw(v[0]+this.x,v[1],cd.currentChar, cd.currentFG, cd.currentBG);
       });
       this.lastBuffer = this.tempBuffer;
     }

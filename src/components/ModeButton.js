@@ -13,6 +13,9 @@ export class ModeButton extends TextButton
     this.changeMode = changeMode;
     allButtons.push(this);
   }
+  pointerOut()
+  {
+  }
   press()
   {
     if(lastModeButton != undefined)

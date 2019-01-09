@@ -2,12 +2,36 @@ import {UIBase} from "../UIElements"
 import {Drawing} from "../Drawing"
 import {Display} from "../Display"
 import {HelpLine} from "./HelpLine"
+import {Panel} from "./Panel"
+const baseColors = require('../baseColors.json').colors;
 
 var lastBGButton;
 var lastFGButton;
 
 var colorButtons = [];
-
+export class ColorPanel extends Panel
+{
+  constructor(x,y)
+  {
+    // currently this is hardcoded
+    // eventually will switch to a width + height defined by the character set file
+    super("Color", x,y,17,13);
+    for (let x = 0; x < 16; x++)
+    {
+      for(let y = 0; y < 12; y++)
+      {
+        let bColor = baseColors[x+y*16];
+        let c = (bColor[0]&0xff)
+            | (bColor[1]&0xff)<<8
+            | (bColor[2]&0xff)<<16
+            | 0xff < 24;
+        let cb = new ColorButton(this.x+x+1,this.y+y+1,1,1, bColor);
+        colorButtons.push(cb);
+        this.addChild(cb);
+      }
+    }
+  }
+}
 export class ColorButton extends UIBase
 {
   constructor(x,y,w,h,color)

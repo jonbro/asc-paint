@@ -1,6 +1,6 @@
 // load and parse a playscii char file
 
-class PlaysciiLoader
+class PlaysciiCharLoader
 {
   constructor()
   {

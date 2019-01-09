@@ -247,8 +247,7 @@ Display.convertColor = function(c)
     // convert to our good representation
     c = (c[0]&0xff)
     | (c[1]&0xff)<<8
-    | (c[2]&0xff)<<16
-    | 0xff << 24;
+    | (c[2]&0xff)<<16;
   }
   return c;
 }

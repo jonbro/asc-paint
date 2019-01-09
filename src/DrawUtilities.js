@@ -1,7 +1,9 @@
 import {Display} from "./Display"
+
 let d = ()=>{
   return Display.display;
 }
+
 // draws a ui outline square
 export function drawSquare(x,y,width,height)
 {
