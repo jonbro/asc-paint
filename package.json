@@ -8,6 +8,7 @@
     "start": "webpack --watch --mode=development & nodemon --ignore src/ --ignore dist/ server.js"
   },
   "dependencies": {
+    "charsets": "github:jonbro/charsets",
     "rot-js": "^2.0.2",
     "sqlite3": "^4.0.4"
   },

@@ -174,12 +174,12 @@ export class Drawing
   }
   importFromRexpaint(buffer)
   {
+    //console.log(buffer.toString());
     let rp = new RexPaintCodec();
     rp.decode(buffer);
     this.layers = rp.layers;
     this.width = rp.width;
     this.height = rp.height;
-    console.log(this);
     this.redrawAll();
   }
 }

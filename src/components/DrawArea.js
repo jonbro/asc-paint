@@ -51,8 +51,22 @@ export class DrawArea extends UIBase
     }
     this.pressDown = this.pressDown & ~(1<<buttonId);
   }
+  pointerOut()
+  {
+    if(this.lastCursorPos)
+    {
+      Drawing.currentDrawing.redrawCell(...this.lastCursorPos);
+    }
+  }
   pointerOver(x,y)
   {
     this.performButtonOps(x,y);
+    // draw a preview of the current cursor
+    if(this.lastCursorPos)
+    {
+      Drawing.currentDrawing.redrawCell(...this.lastCursorPos);
+    }
+    this.lastCursorPos = [x-this.x,y];
+    Drawing.currentDrawing.drawTempWithCurrentSettings(x-this.x,y);
   }
 }

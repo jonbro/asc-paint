@@ -5,7 +5,7 @@ Make cool text mode drawings with 256 colors. Will save as you go! all the avail
 
 CHANGE LOG
 ==========
-*1/1/18*
+*1/8/18*
 - cleaned up the drawing data format
 - drawing always produces continous points
 - fixed issues with rect drawing
@@ -52,16 +52,17 @@ BUGS
 ====
 - Rect draw can't fill the last line of the drawing.
   - issue here is that when the pointer goes out of a ui component, it stops recieving events, causes all sorts of other issues too. need some way to directly subscribe to events until the pointer goes up.
+- when switching away from text mode, it doesn't clear the cursor
 
 TODO
 =========
+- ascii mouse cursor in draw mode
+- different character palettes
 - name file before export
 - handle rexpaint transparency
-- ascii mouse cursor in draw mode
 - grid display
 - layers
 - import / export to playscii
-- different character palettes
 - oval / circle draw mode
 - undo / redo
 - crt effect

@@ -1,4 +1,5 @@
 dependencies:
+  charsets: github.com/jonbro/charsets/74aee9e5e6f7af661fa95fa9c68494cb7fafaed4
   rot-js: 2.0.2
   sqlite3: 4.0.4
 devDependencies:
@@ -4145,6 +4146,10 @@ packages:
       node: '>=4'
     resolution:
       integrity: sha512-nOqH59deCq9SRHlxq1Aw85Jnt4w6KvLKqWVik6oA9ZklXLNIOlqg4F2yrT1MVaTjAqvVwdfeZ7w7aCvJD7ugkw==
+  /string.prototype.codepointat/0.2.1:
+    dev: false
+    resolution:
+      integrity: sha512-2cBVCj6I4IOvEnjgO/hWqXjqBGsY+zwPmHl12Srk9IXSZ56Jwwmy+66XO5Iut/oQVR7t5ihYdLB0GMa4alEUcg==
   /string_decoder/1.1.1:
     dependencies:
       safe-buffer: 5.1.2
@@ -4707,12 +4712,21 @@ packages:
     dev: true
     resolution:
       integrity: sha512-Lhz8TLaYnxq/2ObqHDql8dX8CJi97oHxrjUcYtzKbbykPtVW9WB+poxI+NM2UIzsMgNCZTIf0AQwsjK5yMAqZw==
+  github.com/jonbro/charsets/74aee9e5e6f7af661fa95fa9c68494cb7fafaed4:
+    dependencies:
+      string.prototype.codepointat: 0.2.1
+    dev: false
+    name: charsets
+    resolution:
+      tarball: 'https://codeload.github.com/jonbro/charsets/tar.gz/74aee9e5e6f7af661fa95fa9c68494cb7fafaed4'
+    version: 1.0.1
 registry: 'https://registry.npmjs.org/'
 shrinkwrapMinorVersion: 9
 shrinkwrapVersion: 3
 specifiers:
   babel-cli: ^6.26.0
   babel-preset-env: ^1.7.0
+  charsets: 'github:jonbro/charsets'
   express: ^4.15.4
   nodemon: ^1.18.7
   rot-js: ^2.0.2

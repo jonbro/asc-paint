@@ -19,6 +19,7 @@ import {Panel} from "./components/Panel"
 import {CharButton, CharPanel} from "./components/CharButton"
 import {LayerPanel} from "./components/LayerPanel"
 import {HelpLine} from "./components/HelpLine";
+//import * as CharSets from "charsets";
 
 import * as DrawUtilities from "./DrawUtilities"
 const codePage437 = require('./codePage437.json');
@@ -39,7 +40,8 @@ for (let x = 0; x < 16; x++)
     tilemap[charVal] = [x*10, y*16];
   }
 }
-
+// need a way to post facto get the tile size stuff in
+// maybe it is fine to just overwrite it after load though?
 var o = {
   layout: "tile",
   bg: "black",
@@ -48,13 +50,21 @@ var o = {
   tileColorize: true,
 	width: 82,
 	height: 42,
-  tileSet: tileSet,
+  tileSet: "/charset/img/dos40",
   tileMap: tilemap
 }
 //https://cdn.glitch.com/3a552aa6-77c2-462f-b211-c1e0fca2d303%2Fcp437_10x16_terminal.png?1543891565805
 var d = new Display(o);
 Display.display = d;
-
+// load the info from the charset and set up the display
+fetch("/charset/info/dos40") // Call the fetch function passing the url of the API as a parameter
+.then(function(resp) {
+  resp.json().then(function(data) {
+    console.log(data);
+    d.setInfo(data);
+  });
+});
+  
 for(var x=0;x<o.width;x++)
 {
   for(var y=0;y<o.height;y++)
