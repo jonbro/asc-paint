@@ -5,7 +5,7 @@ Make cool text mode drawings with 256 colors. Will save as you go! all the avail
 
 CHANGE LOG
 ==========
-*1/8/18*
+*1/8/19*
 - cleaned up the drawing data format
 - drawing always produces continous points
 - fixed issues with rect drawing
